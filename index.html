@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>power</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; background: #000; color: #fff; font-family: 'Inter', sans-serif; overflow: hidden; cursor: none; }
+
+    #cur {
+      position: fixed; z-index: 9999; pointer-events: none;
+      width: 8px; height: 8px; border-radius: 50%; background: #fff;
+      transform: translate(-50%, -50%);
+      transition: width .18s, height .18s, box-shadow .18s;
+      box-shadow: 0 0 7px 3px rgba(255,255,255,.7), 0 0 20px 6px rgba(255,255,255,.2);
+    }
+    #cur.xl { width: 16px; height: 16px; box-shadow: 0 0 12px 5px rgba(255,255,255,.8), 0 0 36px 12px rgba(255,255,255,.25); }
+
+    #cv { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+
+    /* SPLASH */
+    #sp {
+      position: fixed; inset: 0; z-index: 80;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      transition: opacity .75s ease;
+    }
+    .sp-dot {
+      width: 10px; height: 10px; border-radius: 50%; background: #fff; margin-bottom: 48px;
+      box-shadow: 0 0 10px 4px rgba(255,255,255,.95), 0 0 28px 9px rgba(255,255,255,.5), 0 0 65px 22px rgba(255,255,255,.18);
+      animation: dot-breathe 2.6s ease-in-out infinite;
+      transition: transform .5s ease, opacity .5s ease;
+    }
+    @keyframes dot-breathe {
+      0%,100% { box-shadow: 0 0 10px 4px rgba(255,255,255,.95), 0 0 28px 9px rgba(255,255,255,.5), 0 0 65px 22px rgba(255,255,255,.18); }
+      50%      { box-shadow: 0 0 16px 6px rgba(255,255,255,1), 0 0 46px 15px rgba(255,255,255,.62), 0 0 100px 33px rgba(255,255,255,.24); }
+    }
+    .sp-txt { font-size: 11px; letter-spacing: .16em; color: rgba(255,255,255,0); animation: reveal-txt 1.4s ease .9s forwards; }
+    @keyframes reveal-txt { to { color: rgba(255,255,255,.38); } }
+
+    /* MAIN */
+    #mn {
+      position: relative; z-index: 10; height: 100vh; overflow-y: auto;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 40px 20px 100px; opacity: 0; transition: opacity .9s ease;
+    }
+    .aur {
+      position: absolute; width: 760px; height: 380px;
+      background: radial-gradient(ellipse at center, rgba(255,255,255,.032) 0%, transparent 65%);
+      pointer-events: none; z-index: 0; animation: aur-pulse 5s ease-in-out infinite;
+    }
+    @keyframes aur-pulse { 0%,100%{opacity:.55;transform:scale(1)} 50%{opacity:1;transform:scale(1.07)} }
+    .rv { opacity: 0; transform: translateY(16px); transition: opacity .65s ease, transform .65s ease; transition-delay: var(--d,0s); }
+    #mn.go .rv { opacity: 1; transform: translateY(0); }
+
+    .name {
+      position: relative; z-index: 1;
+      font-size: clamp(60px, 12vw, 112px); font-weight: 900; letter-spacing: -.025em;
+      line-height: 1; text-align: center; margin-bottom: 14px;
+      animation: float-name 6s ease-in-out infinite;
+      text-shadow: 0 0 18px #fff, 0 0 36px rgba(255,255,255,.85), 0 0 72px rgba(255,255,255,.5), 0 0 130px rgba(255,255,255,.28), 0 0 220px rgba(255,255,255,.1);
+    }
+    @keyframes float-name { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-9px)} }
+
+    .bio {
+      font-size: 14px; color: rgba(255,255,255,.46); text-align: center;
+      margin-bottom: 36px; min-height: 20px; letter-spacing: .01em;
+    }
+    .bio::after { content: '|'; animation: blink 1.1s step-end infinite; opacity: 0; margin-left: 1px; }
+    .bio.typed::after { opacity: .5; animation: none; }
+    .bio.done::after  { display: none; }
+    @keyframes blink { 0%,100%{opacity:0} 50%{opacity:.5} }
+
+    /* Discord card */
+    .ring { position: relative; border-radius: 23px; padding: 1px; width: 100%; max-width: 370px; overflow: hidden; }
+    .ring::before {
+      content: ''; position: absolute; inset: -60%;
+      background: conic-gradient(from 0deg, transparent 50%, rgba(255,255,255,.22) 64%, rgba(255,255,255,.55) 70%, rgba(255,255,255,.22) 76%, transparent 90%);
+      animation: spin-r 5s linear infinite;
+    }
+    @keyframes spin-r { to { transform: rotate(360deg); } }
+    .dc-card { position: relative; z-index: 1; display: flex; align-items: center; gap: 16px; background: #060606; border-radius: 22px; padding: 16px 20px; transition: background .3s; }
+    .ring:hover .dc-card { background: #0c0c0c; }
+    .av-wrap { position: relative; flex-shrink: 0; }
+    .av { width: 56px; height: 56px; border-radius: 50%; background: #111; object-fit: cover; display: block; transition: box-shadow .45s ease; }
+    .av.s-online  { box-shadow: 0 0 0 2.5px #000, 0 0 0 4px #23a55a, 0 0 14px 4px rgba(35,165,90,.35); }
+    .av.s-idle    { box-shadow: 0 0 0 2.5px #000, 0 0 0 4px #f0b232, 0 0 14px 4px rgba(240,178,50,.35); }
+    .av.s-dnd     { box-shadow: 0 0 0 2.5px #000, 0 0 0 4px #f23f43, 0 0 14px 4px rgba(242,63,67,.38); }
+    .av.s-offline { box-shadow: 0 0 0 2.5px #000, 0 0 0 4px #747f8d; }
+    .av-dot { position: absolute; bottom: 0; right: 0; width: 14px; height: 14px; border-radius: 50%; border: 3px solid #060606; background: #747f8d; }
+    .av-dot.online { background: #23a55a; } .av-dot.idle { background: #f0b232; } .av-dot.dnd { background: #f23f43; }
+    .dc-info { flex: 1; min-width: 0; }
+    .dc-user { font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .dc-act  { font-size: 12px; color: rgba(255,255,255,.33); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* Music player */
+    #pl {
+      position: fixed; bottom: 22px; left: 22px; z-index: 50;
+      display: flex; align-items: center; gap: 12px;
+      background: rgba(6,6,6,.92); border: 1px solid rgba(255,255,255,.07);
+      border-radius: 16px; padding: 12px 14px; min-width: 270px; max-width: 330px;
+      backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
+      opacity: 0; transform: translateY(10px); transition: opacity .5s, transform .5s; pointer-events: none;
+    }
+    #pl.on { opacity: 1; transform: translateY(0); pointer-events: auto; }
+    .p-thumb { width: 44px; height: 44px; border-radius: 10px; object-fit: cover; background: #111; flex-shrink: 0; }
+    .p-inf { flex: 1; min-width: 0; }
+    .p-song { font-size: 12px; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 1px; }
+    .p-who  { font-size: 11px; color: rgba(255,255,255,.35); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 7px; }
+    .p-row  { display: flex; align-items: center; gap: 5px; }
+    .p-t    { font-size: 9px; color: rgba(255,255,255,.25); flex-shrink: 0; font-variant-numeric: tabular-nums; }
+    .p-bar  { flex: 1; height: 3px; border-radius: 2px; background: rgba(255,255,255,.1); overflow: hidden; }
+    .p-fill { height: 100%; background: rgba(255,255,255,.6); border-radius: 2px; width: 0; transition: width .8s linear; }
+    .p-btn  { background: none; border: none; color: rgba(255,255,255,.55); cursor: none; display: flex; align-items: center; flex-shrink: 0; padding: 0; transition: color .15s; }
+    .p-btn:hover { color: #fff; }
+    .p-btn svg { width: 22px; height: 22px; fill: currentColor; }
+    .wave { display: flex; align-items: center; gap: 2px; height: 22px; flex-shrink: 0; }
+    .wb   { width: 2.5px; border-radius: 1.5px; background: rgba(255,255,255,.35); animation: wb 1s ease-in-out infinite; }
+    .wb:nth-child(1){animation-delay:0s}.wb:nth-child(2){animation-delay:.12s}.wb:nth-child(3){animation-delay:.24s}
+    .wb:nth-child(4){animation-delay:.36s}.wb:nth-child(5){animation-delay:.48s}
+    @keyframes wb { 0%,100%{height:3px} 50%{height:18px} }
+    #pl.paused .wb { animation-play-state: paused; height: 4px; }
+  </style>
+</head>
+<body>
+
+<!-- Local audio — plays instantly after click, no YouTube needed -->
+<audio id="sc" src="assets/smooth-criminal.webm" loop preload="auto"></audio>
+
+<div id="cur"></div>
+<canvas id="cv"></canvas>
+
+<!-- Splash -->
+<div id="sp">
+  <div class="sp-dot"></div>
+  <span class="sp-txt">click to enter</span>
+</div>
+
+<!-- Main -->
+<div id="mn">
+  <div class="aur"></div>
+  <h1 class="name rv" style="--d:.05s" id="hero-name">power</h1>
+  <p  class="bio  rv" style="--d:.18s" id="hero-bio"></p>
+  <div class="ring rv" style="--d:.34s">
+    <div class="dc-card">
+      <div class="av-wrap">
+        <img class="av s-offline" id="av" src="assets/pfp.webp" alt=""
+             onerror="this.onerror=null;this.src='https://cdn.discordapp.com/embed/avatars/0.png'" />
+        <div class="av-dot offline" id="av-dot"></div>
+      </div>
+      <div class="dc-info">
+        <div class="dc-user" id="dc-user">power</div>
+        <div class="dc-act"  id="dc-act">connecting...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Music player -->
+<div id="pl">
+  <img class="p-thumb" id="p-thumb" src="https://img.youtube.com/vi/h_D3VFfhvs4/hqdefault.jpg" alt="" />
+  <div class="p-inf">
+    <div class="p-song" id="p-song">Smooth Criminal</div>
+    <div class="p-who"  id="p-who">Michael Jackson</div>
+    <div class="p-row">
+      <span class="p-t" id="p-el">0:00</span>
+      <div class="p-bar"><div class="p-fill" id="p-fill"></div></div>
+      <span class="p-t" id="p-tot">0:00</span>
+    </div>
+  </div>
+  <button class="p-btn" id="p-btn" onclick="toggleAudio()">
+    <svg id="p-icon" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+  </button>
+  <div class="wave">
+    <div class="wb"></div><div class="wb"></div><div class="wb"></div>
+    <div class="wb"></div><div class="wb"></div>
+  </div>
+</div>
+
+<script>
+const UID = '1467864969243787407';
+const sc  = document.getElementById('sc');
+
+// ── Cursor ──────────────────────────────────────────────────
+const cur = document.getElementById('cur');
+let mx = -200, my = -200;
+document.addEventListener('mousemove', e => { mx=e.clientX; my=e.clientY; cur.style.left=mx+'px'; cur.style.top=my+'px'; });
+document.querySelectorAll('a,button,.dc-card').forEach(el => {
+  el.addEventListener('mouseenter', () => cur.classList.add('xl'));
+  el.addEventListener('mouseleave', () => cur.classList.remove('xl'));
+});
+
+// ── Stars + shooting stars ───────────────────────────────────
+const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
+let W, H, stars = [], shoots = [], sticker = 0, nxt = 280;
+function resize() {
+  W = cv.width = window.innerWidth; H = cv.height = window.innerHeight;
+  stars = [];
+  for (let i=0, n=Math.round(W*H/5600); i<n; i++)
+    stars.push({ x:Math.random()*W, y:Math.random()*H, r:Math.random()*1.5+.2, a:Math.random()*.6+.12, da:(Math.random()*.011+.004)*(Math.random()<.5?1:-1) });
+}
+(function frame() {
+  ctx.clearRect(0,0,W,H);
+  const px=(mx/W-.5), py=(my/H-.5);
+  for (const s of stars) {
+    s.a+=s.da; if(s.a>.82||s.a<.08) s.da*=-1;
+    ctx.beginPath(); ctx.arc(s.x+px*s.r*8, s.y+py*s.r*8, s.r, 0, Math.PI*2);
+    ctx.fillStyle=`rgba(255,255,255,${s.a.toFixed(3)})`; ctx.fill();
+  }
+  if(++sticker>=nxt){
+    shoots.push({x:Math.random()*W*.75+W*.05,y:Math.random()*H*.45,len:Math.random()*140+60,spd:Math.random()*8+5,life:0,max:48});
+    sticker=0; nxt=200+Math.random()*420;
+  }
+  for (let i=shoots.length-1;i>=0;i--) {
+    const s=shoots[i]; s.x+=s.spd; s.y+=s.spd*.45; s.life++;
+    const t=s.life/s.max, opa=t<.25?t/.25:t>.65?(1-t)/.35:1;
+    const g=ctx.createLinearGradient(s.x,s.y,s.x-s.len,s.y-s.len*.45);
+    g.addColorStop(0,`rgba(255,255,255,${opa.toFixed(3)})`); g.addColorStop(1,'rgba(255,255,255,0)');
+    ctx.beginPath(); ctx.moveTo(s.x,s.y); ctx.lineTo(s.x-s.len,s.y-s.len*.45);
+    ctx.strokeStyle=g; ctx.lineWidth=1.5; ctx.stroke();
+    if(s.life>=s.max) shoots.splice(i,1);
+  }
+  requestAnimationFrame(frame);
+})();
+resize(); window.addEventListener('resize', resize);
+
+// ── Audio controls ───────────────────────────────────────────
+function toggleAudio() {
+  sc.paused ? sc.play() : sc.pause();
+}
+sc.addEventListener('play',  () => { setIcon(true);  document.getElementById('pl').classList.remove('paused'); });
+sc.addEventListener('pause', () => { setIcon(false); document.getElementById('pl').classList.add('paused'); });
+sc.addEventListener('timeupdate', () => {
+  if (spMode === 'yt' && sc.duration) {
+    document.getElementById('p-fill').style.width = (sc.currentTime / sc.duration * 100) + '%';
+    document.getElementById('p-el').textContent   = fmt(sc.currentTime);
+    document.getElementById('p-tot').textContent  = fmt(sc.duration);
+  }
+});
+function setIcon(playing) {
+  document.getElementById('p-icon').innerHTML = playing
+    ? '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>'
+    : '<path d="M8 5v14l11-7z"/>';
+}
+function fmt(s) { s=Math.max(s||0,0); return `${Math.floor(s/60)}:${String(Math.floor(s)%60).padStart(2,'0')}`; }
+
+// ── Splash → Main ────────────────────────────────────────────
+const sp  = document.getElementById('sp');
+const mn  = document.getElementById('mn');
+const dot = document.querySelector('.sp-dot');
+const txt = document.querySelector('.sp-txt');
+
+sp.addEventListener('click', () => {
+  txt.style.opacity='0'; dot.style.transform='scale(7)'; dot.style.opacity='0'; sp.style.opacity='0';
+  // Play audio on user gesture — always works
+  sc.play().catch(() => {});
+  document.getElementById('pl').classList.add('on');
+  setTimeout(() => {
+    sp.style.display='none'; mn.style.opacity='1'; mn.classList.add('go');
+    document.body.style.overflow='hidden';
+    pull();
+  }, 680);
+});
+
+// ── Looping typewriter bio ───────────────────────────────────
+let bioTarget='', bioTimer;
+function typeBio(str) {
+  if (str === bioTarget) return;
+  bioTarget = str;
+  clearTimeout(bioTimer);
+  const el = document.getElementById('hero-bio');
+  el.classList.remove('done','typed'); el.textContent='';
+  if (!str) { el.classList.add('done'); return; }
+  let i=0;
+  function typeStep() {
+    if (i<bioTarget.length) {
+      el.textContent=bioTarget.slice(0,++i); el.classList.add('typed'); el.classList.remove('done');
+      bioTimer=setTimeout(typeStep, 30+Math.random()*20);
+    } else {
+      el.classList.add('done'); el.classList.remove('typed');
+      bioTimer=setTimeout(eraseStep, 2800);
+    }
+  }
+  function eraseStep() {
+    if (el.textContent.length>0) {
+      el.textContent=el.textContent.slice(0,-1); el.classList.add('typed'); el.classList.remove('done');
+      bioTimer=setTimeout(eraseStep, 38+Math.random()*18);
+    } else {
+      el.classList.remove('typed','done');
+      bioTimer=setTimeout(()=>{ bioTarget=''; typeBio(str); }, 600);
+    }
+  }
+  typeStep();
+}
+
+// ── Lanyard ──────────────────────────────────────────────────
+let spTs=null, spMode='yt';
+
+async function pull() {
+  try {
+    const {data:d} = await fetch(`https://api.lanyard.rest/v1/users/${UID}`).then(r=>r.json());
+    if (!d) return;
+    const {discord_user:u, discord_status:st, activities:ac, listening_to_spotify:lis, spotify:spData} = d;
+
+    // Avatar — animated avatars need .webp?animated=true (Discord dropped .gif delivery)
+    const h  = u.avatar;
+    const av = document.getElementById('av');
+    if (h) {
+      const fmt = h.startsWith('a_') ? 'webp?size=128&animated=true' : 'png?size=128';
+      av.src = `https://cdn.discordapp.com/avatars/${u.id}/${h}.${fmt}`;
+    }
+    av.className = `av s-${st}`;
+    document.getElementById('av-dot').className    = `av-dot ${st}`;
+    document.getElementById('dc-user').textContent = u.username;
+    document.getElementById('hero-name').textContent = u.global_name || u.username;
+
+    const custom = ac?.find(a=>a.type===4);
+    const bio = custom ? (custom.emoji?.name ? custom.emoji.name+' ':'')+(custom.state||'') : '';
+    typeBio(bio);
+    document.getElementById('dc-act').textContent = bio || st;
+
+    // Spotify override
+    if (lis && spData) {
+      if (spMode==='yt') { spMode='spotify'; sc.pause(); }
+      document.getElementById('p-thumb').src        = spData.album_art_url;
+      document.getElementById('p-song').textContent = spData.song;
+      document.getElementById('p-who').textContent  = spData.artist;
+      spTs = spData.timestamps;
+      document.getElementById('pl').classList.add('on');
+    } else if (spMode==='spotify') {
+      spMode='yt'; spTs=null;
+      document.getElementById('p-thumb').src        = 'https://img.youtube.com/vi/h_D3VFfhvs4/hqdefault.jpg';
+      document.getElementById('p-song').textContent = 'Smooth Criminal';
+      document.getElementById('p-who').textContent  = 'Michael Jackson';
+      sc.play().catch(()=>{});
+    }
+  } catch(_) {}
+}
+
+// Spotify progress tick
+setInterval(() => {
+  if (spMode==='spotify' && spTs) {
+    const el=(Date.now()-spTs.start)/1000, tot=(spTs.end-spTs.start)/1000;
+    document.getElementById('p-fill').style.width = Math.min(el/tot*100,100)+'%';
+    document.getElementById('p-el').textContent   = fmt(Math.max(el,0));
+    document.getElementById('p-tot').textContent  = fmt(tot);
+  }
+}, 1000);
+
+setInterval(pull, 30_000);
+</script>
+</body>
+</html>
